@@ -239,7 +239,7 @@ function DF:CreateCoolTip()
 		self:SetSize(500, 500)
 		self:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 
-		if (not self.HaveRoundedCorners) then
+		if (not DF.IsLegion() and not self.HaveRoundedCorners) then
 			self:SetBackdrop(nil)
 			DF:AddRoundedCornersToFrame(self, gameCooltip.RoundedFramePreset)
 			self:DisableRoundedCorners()
@@ -358,6 +358,15 @@ function DF:CreateCoolTip()
 		DF.table.addunique(UISpecialFrames, "GameCooltipFrame2")
 		createTooltipFrames(frame2)
 		frame2:SetPoint("bottomleft", frame1, "bottomright", 4, 0)
+
+		--Older Details releases use lowercase field names for these overlays.
+		for _, frame in ipairs({frame1, frame2}) do
+			for _, key in ipairs({"framebackgroundLeft", "framebackgroundRight", "framebackgroundCenter"}) do
+				if frame[key] then
+					frame[key]:Hide()
+				end
+			end
+		end
 
 		if (not frame2.FlashAnimation) then
 			DF:CreateFlashAnimation(frame2)
@@ -2673,8 +2682,10 @@ function DF:CreateCoolTip()
 		gameCooltip:HideSelectedTexture(frame2)
 
 		gameCooltip:HideRoundedCorner()
-		GameCooltip.frame1:SetBorderCornerColor(unpack(gameCooltip.RoundedFramePreset.border_color))
-		GameCooltip.frame2:SetBorderCornerColor(unpack(gameCooltip.RoundedFramePreset.border_color))
+		if frame1.HaveRoundedCorners then
+			frame1:SetBorderCornerColor(unpack(gameCooltip.RoundedFramePreset.border_color))
+			frame2:SetBorderCornerColor(unpack(gameCooltip.RoundedFramePreset.border_color))
+		end
 
 		gameCooltip.FixedValue = nil
 		gameCooltip.HaveSubMenu = false

@@ -1217,6 +1217,77 @@ test("load conditions assign callbacks before construction and suppress programm
 	equal(calls, 11)
 end)
 
+test("shared Cooltip uses plain Legion backdrops and retains Retail rounded borders", function()
+	for _, legion in ipairs({true, false}) do
+		local env = environment(legion and 70300 or 100205)
+		local added, borders, backdrop
+		env.DF = {
+			IsLegion = function() return legion end,
+			AddRoundedCornersToFrame = function(_, frame)
+				added = (added or 0) + 1
+				frame.DisableRoundedCorners = function() end
+				frame.EnableRoundedCorners = function() end
+			end,
+			ParseColors = function(_, colors) return unpack(colors) end,
+		}
+		env.gameCooltip = {RoundedFramePreset = {border_color = {.2, .2, .2, 1}}}
+		env.GameCooltip = env.gameCooltip
+		env.defaultBackdrop = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"}
+		env.defaultBackdropColor = {.1215, .1176, .1294, .8}
+		env.defaultBackdropBorderColor = {.05, .05, .05, 1}
+		local function frame()
+			return {
+				SetBackdrop = function(_, value) backdrop = value end,
+				SetBackdropColor = function(_, r, g, b, a)
+					equal(r, .1215); equal(g, .1176); equal(b, .1294); equal(a, .8)
+				end,
+				SetBackdropBorderColor = function() end,
+				SetBorderCornerColor = function() borders = (borders or 0) + 1 end,
+				frameBackgroundTexture = {Show = function() end, Hide = function() end},
+			}
+		end
+		env.frame1, env.frame2 = frame(), frame()
+		local initialize = section("libs\\DF\\cooltip.lua",
+			"\t\tif (not DF.IsLegion() and not self.HaveRoundedCorners) then",
+			"\n\t\t--this texture get the color")
+		for _, tooltip in ipairs({env.frame1, env.frame2}) do
+			env.self = tooltip
+			run(initialize, env)
+		end
+		equal(added or 0, legion and 0 or 2)
+		equal(backdrop, env.defaultBackdrop)
+		run(section("libs\\DF\\cooltip.lua", "\tfunction GameCooltip:ShowRoundedCorner()",
+			"\n\tgameCooltip.frame1 = frame1"), env)
+		env.gameCooltip:ShowRoundedCorner()
+		env.gameCooltip:HideRoundedCorner()
+		local resetBorders = section("libs\\DF\\cooltip.lua",
+			"\t\tgameCooltip:HideRoundedCorner()", "\n\n\t\tgameCooltip.FixedValue")
+		run(resetBorders, env)
+		equal(borders or 0, legion and 0 or 2)
+		if legion then equal(backdrop, env.defaultBackdrop) end
+	end
+end)
+
+test("Cooltip replacement hides legacy Details lowercase background overlays", function()
+	local source = section("libs\\DF\\cooltip.lua",
+		"\t\t--Older Details releases use lowercase field names", "\n\t\tif (not frame2.FlashAnimation)")
+	for _, legacy in ipairs({true, false}) do
+		local hidden = 0
+		local env = environment(70300)
+		env.frame1, env.frame2 = {}, {}
+		for _, frame in ipairs({env.frame1, env.frame2}) do
+			if legacy then
+				for _, key in ipairs({"framebackgroundLeft", "framebackgroundRight", "framebackgroundCenter"}) do
+					frame[key] = {Hide = function() hidden = hidden + 1 end}
+				end
+			end
+			frame.frameBackgroundTexture = {Hide = function() error("new background must remain visible") end}
+		end
+		run(source, env)
+		equal(hidden, legacy and 6 or 0)
+	end
+end)
+
 test("both Legion manifests load compatibility before libraries", function()
 	for _, path in ipairs({"Plater.toc", "Plater_Legion.toc"}) do
 		local text = read(path)
