@@ -1,0 +1,7 @@
+changeset:   72:301e17d5a44b
+tag:         v7.3.5.072
+user:        Tercio
+date:        Fri Apr 13 12:44:55 2018 -0300
+summary:     - Reduced the default size for enemy npc.
+
+
