@@ -45,7 +45,11 @@ local options_button_template = DF:GetTemplate("button", "OPTIONS_BUTTON_TEMPLAT
 local LOC = DF.Language.GetLanguageTable(addonId)
 
 function Plater.Resources.GetResourceEnumNameForPlayer()
+    if not (Plater.PlayerGUID or UnitGUID("player")) then print("Plater resources: no GUID yet") end
     local playerSerial = Plater.PlayerGUID or UnitGUID("player")
+    if (not playerSerial) then
+        return nil --GUID not available yet (early login), try again later
+    end
     local playerClassLoc, playerClass = UnitClass("player")
 
     if (not Plater.db.profile.resources_settings.chr[playerSerial]) then

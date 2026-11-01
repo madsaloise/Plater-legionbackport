@@ -567,9 +567,11 @@ end
 
 			--get the resource to use on this character, players can change which resource model to use in the options panel
 			local resourceEnumName = Plater.Resources.GetResourceEnumNameForPlayer()
-
-			--if no enum name, this class does not use a resource bar
+			--if no enum name, either the GUID isn't available yet (early login) or the class has no resource bar
 			if (not resourceEnumName) then
+				if (not (Plater.PlayerGUID or UnitGUID("player"))) then
+					C_Timer.After(1, Plater.Resources.UpdateResourceFrameToUse)
+				end
 				return
 			end
 

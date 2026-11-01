@@ -1,0 +1,95 @@
+function (self, unitId, unitFrame, envTable, modTable)
+    local DF = _G ["DetailsFramework"]
+
+    -- seconds left on each of the player's own dots, and whether it is in pandemic
+    local timeLeft = {}
+    local inPandemic = {}
+
+    -- Reads the dots from the aura icons Plater shows on the plate (both debuff rows).
+    -- Ghost auras use a negative spellId, so they never match.
+    local function scanIcons(unitFrame)
+        wipe(timeLeft)
+        wipe(inPandemic)
+
+        for _, buffFrame in ipairs({unitFrame.BuffFrame, unitFrame.BuffFrame2}) do
+            for _, icon in ipairs(buffFrame and buffFrame.PlaterBuffList or {}) do
+                local spellId = icon.SpellId
+                if icon.InUse and icon:IsShown() and (spellId == modTable.firstDot or spellId == modTable.secondDot)
+                and icon.Caster and UnitIsUnit(icon.Caster, "player") then
+                    local expirationTime, duration = icon.ExpirationTime, icon.Duration
+                    local remaining = (expirationTime and expirationTime > 0) and (expirationTime - GetTime()) or 0
+                    timeLeft[spellId] = remaining
+                    inPandemic[spellId] = duration and duration > 0 and (remaining / duration) < modTable.pandemicThreshold
+                end
+            end
+        end
+    end
+
+    -- Priority: pandemic (shortest time left) > both dots > one dot
+    local function pickColor()
+        local first, second = modTable.firstDot, modTable.secondDot
+
+        local pandemicColor, pandemicTime
+        for _, aura in ipairs({first, second}) do
+            local color = modTable.pandemicColor[aura]
+            if color and inPandemic[aura] and (not pandemicTime or timeLeft[aura] < pandemicTime) then
+                pandemicColor, pandemicTime = color, timeLeft[aura]
+            end
+        end
+        if pandemicColor then return pandemicColor end
+
+        if timeLeft[first] and timeLeft[second] then return modTable.bothColor end
+        if timeLeft[first] then return modTable.firstColor end
+        if timeLeft[second] then return modTable.secondColor end
+    end
+
+    local function paint(unitFrame, color)
+        unitFrame.dotModPainted = true
+        if modTable.colorHealthBar then
+            Plater.SetNameplateColor(unitFrame, color)
+        end
+        if modTable.colorBorder then
+            Plater.SetBorderColor(unitFrame, color)
+        end
+        if modTable.colorName then
+            DF:SetFontColor(unitFrame.healthBar.unitName, color)
+        end
+    end
+
+    -- Only undoes plates this mod colored. The flag lives on the unitFrame, so it also
+    -- cleans up a plate that was recycled from a mob that had dots.
+    local function clear(unitFrame)
+        if not unitFrame.dotModPainted then return end
+        unitFrame.dotModPainted = nil
+
+        if modTable.colorHealthBar then
+            local npcColor = Plater.GetNpcColor(unitFrame)
+            if npcColor then
+                Plater.SetNameplateColor(unitFrame, npcColor)
+            else
+                -- forceRefresh: RefreshNameplateColor can no-op in combat and leave the old color behind
+                Plater.FindAndSetNameplateColor(unitFrame, true)
+                if InCombatLockdown() and unitFrame.CanCheckAggro and Plater.db.profile.aggro_modifies.health_bar_color then
+                    Plater.UpdateNameplateThread(unitFrame)
+                end
+            end
+        end
+        if modTable.colorBorder then
+            Plater.SetBorderColor(unitFrame)
+        end
+        if modTable.colorName then
+            DF:SetFontColor(unitFrame.healthBar.unitName, 1, 1, 1, 1)
+        end
+    end
+
+    function envTable.SetNameplateColors(unitFrame)
+        scanIcons(unitFrame)
+
+        local color = pickColor()
+        if color then
+            paint(unitFrame, color)
+        else
+            clear(unitFrame)
+        end
+    end
+end

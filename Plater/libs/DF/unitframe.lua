@@ -158,14 +158,16 @@ local cleanfunction = function() end
 		Height = 20,
 	}
 
+	local IS_LEGION_CLIENT = (select(4, GetBuildInfo()) or 0) < 80000
+
 	healthBarMetaFunctions.HealthBarEvents = {
 		{"PLAYER_ENTERING_WORLD"},
 		{"UNIT_HEALTH", true},
 		{"UNIT_MAXHEALTH", true},
-		{(IS_WOW_PROJECT_NOT_MAINLINE) and "UNIT_HEALTH_FREQUENT", true}, -- this one is classic-only...
+		{(IS_WOW_PROJECT_NOT_MAINLINE or IS_LEGION_CLIENT) and "UNIT_HEALTH_FREQUENT", true}, -- classic and Legion
 		{"UNIT_HEAL_PREDICTION", true},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_ABSORB_AMOUNT_CHANGED", true},
-		{(IS_WOW_PROJECT_MAINLINE) and "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", true},
+		{(IS_WOW_PROJECT_MAINLINE and not IS_LEGION_CLIENT) and "UNIT_ABSORB_AMOUNT_CHANGED", true},
+		{(IS_WOW_PROJECT_MAINLINE and not IS_LEGION_CLIENT) and "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", true},
 	}
 
 	--setup the castbar to be used by another unit

@@ -1,0 +1,4 @@
+function (self, unitId, unitFrame, envTable, modTable)
+    envTable.SetNameplateColors(unitFrame)
+end
+

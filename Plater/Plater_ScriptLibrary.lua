@@ -15,7 +15,6 @@ platerInternal.Scripts.DefaultCastScripts = {
 	"Cast - Ultra Important [P]",
 	"Cast - Very Important [Plater]",
 	"Cast - Glowing [P]",
-	"Cast - Circle AoE [P]",
 	"Cast - Shield Interrupt [P]",
 	"Cast - Stop Casting [P]",
 }
@@ -974,7 +973,6 @@ do
 		},
 		Func = function()
 			Plater.AddTriggerToScript(388923, "cast", "Cast - Ultra Important [P]") --Burst Forth
-			Plater.AddTriggerToScript(377912, "cast", "Cast - Circle AoE [P]") --Expel Intruders
 			Plater.AddTriggerToScript(377912, "cast", "Cast - On Going Cast [P]") --Arcane Rain
 			Plater.AddTriggerToScript(209495, "cast", "Cast - Frontal Cone [Plater]") --Charged Smash
 			Plater.AddTriggerToScript(209033, "cast", "Cast - Quick Flash [P]") --Fortification
@@ -1010,7 +1008,6 @@ do
 				["Add - Warning [P]"] = {129758, 190426, 186696, 101075, 100818, 98081, 52019, npc = true},
 				["Aura - Buff Alert [Plater]"] = {377738, 378149},
 				["Cast - Big Alert [Plater]"] = {257397, 257736, 382787, 374699, 377402, 369602, 369465, 369400, 381593, 265091, 265433, 382791, 376780},
-				["Cast - Circle AoE [P]"] = {258672, 258777, 257756, 257784, 256405, 256589, 393793, 388046, 375079, 390290, 369811, 369703, 226287, 410999, 372561},
 				["Cast - Frontal Cone [Plater]"] = {257426, 255952, 257870, 413147, 383107, 377559, 388060, 376170, 384524, 375351, 390111, 369791, 369573, 369563, 369335, 369061, 375727, 265016, 265019, 260793, 260292, 272457, 272609, 269843, 183465, 226296, 188169, 183088, 410873, 411012, 88308, 382708, 375251, 375439, 372311, 373742, 372201, 374533, 377204},
 				["Cast - Glowing [P]"] = {384353, 265376, 193941, 411002},
 				["Cast - Quick Flash [P]"] = {385029, 374563, 377341, 369675, 369365, 369411, 278961, 202108, 88186},
@@ -1218,7 +1215,6 @@ do
 				["Aura - Buff Alert [Plater]"] = {},
 				["Cast - Big Alert [Plater]"] = {225573, 278444, 164887, 168082, 76813, 227913, 265368},
 				["Fixate by Unit Buff [P]"] = {426662, 426663},
-				["Cast - Circle AoE [P]"] = {256882, 172578, 412063},
 				["Cast - Frontal Cone [Plater]"] = {201226, 204667, 198379, 200768, 253239, 250258, 255567, 194956, 427510, 426645, 412505, 412129, 419351, 401482, 404916, 200345, 200261, 198641, 265372, 271174, 264694, 264923},
 				["Cast - Glowing [P]"] = {169445},
 				["Cast - Quick Flash [P]"] = {255824, 252781, 250096, 200248, 197797, 264520, 418202, 201839, 412012, 411958},

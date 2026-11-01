@@ -31,6 +31,35 @@ function private.xpcall(callback, errorHandler, ...)
 	end, errorHandler)
 end
 
+-- 8.0 renamed Scale:SetFromScale/SetToScale to SetScaleFrom/SetScaleTo; scripts use the new names.
+do
+	local scaleAnimation = CreateFrame("Frame"):CreateAnimationGroup():CreateAnimation("Scale")
+	local scaleMethods = getmetatable(scaleAnimation).__index
+	if type(scaleMethods) == "table" then
+		scaleMethods.SetScaleFrom = scaleMethods.SetScaleFrom or scaleMethods.SetFromScale
+		scaleMethods.SetScaleTo = scaleMethods.SetScaleTo or scaleMethods.SetToScale
+		scaleMethods.GetScaleFrom = scaleMethods.GetScaleFrom or scaleMethods.GetFromScale
+		scaleMethods.GetScaleTo = scaleMethods.GetScaleTo or scaleMethods.GetToScale
+	end
+
+	-- Alpha:SetChange(delta) is the pre-7.0 API; map it to SetFromAlpha/SetToAlpha
+	-- assuming a fade in from 0 (delta > 0) or a fade out to 0 (delta < 0).
+	local alphaAnimation = scaleAnimation:GetParent():CreateAnimation("Alpha")
+	local alphaMethods = getmetatable(alphaAnimation).__index
+	if type(alphaMethods) == "table" and not alphaMethods.SetChange and alphaMethods.SetFromAlpha then
+		alphaMethods.SetChange = function(animation, delta)
+			delta = tonumber(delta) or 0
+			if delta >= 0 then
+				animation:SetFromAlpha(0)
+				animation:SetToAlpha(math.min(delta, 1))
+			else
+				animation:SetFromAlpha(math.min(-delta, 1))
+				animation:SetToAlpha(0)
+			end
+		end
+	end
+end
+
 local unavailableCVars = {}
 function private.SetCVar(name, value, ...)
 	if GetCVar(name) == nil then

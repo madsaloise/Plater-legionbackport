@@ -1,0 +1,34 @@
+function (modTable)
+    -- DOT IDS PER CLASS: add one line per class, {firstDot, secondDot}
+    -- Class tokens: DEATHKNIGHT, DEMONHUNTER, DRUID, EVOKER, HUNTER, MAGE, MONK,
+    -- PALADIN, PRIEST, ROGUE, SHAMAN, WARLOCK, WARRIOR
+    local dotsByClass = {
+        SHAMAN = {188389, 334168},  -- Flame Shock, Lashing Flames
+        PRIEST = {589, 34914},      -- Shadow Word: Pain, Vampiric Touch
+        DRUID  = {164815, 164812},  -- Sunfire, Moonfire
+    }
+
+    local _, playerClass = UnitClass("player")
+    local dots = dotsByClass[playerClass] or {0, 0}  -- 0 never matches an aura, so unlisted classes do nothing
+
+    local cfg = modTable.config
+
+    modTable.firstDot = dots[1]
+    modTable.secondDot = dots[2]
+
+    modTable.firstColor = cfg.firstDotColor
+    modTable.secondColor = cfg.secondDotColor
+    modTable.bothColor = cfg.bothDotsColor
+    modTable.pandemicColor = {
+        [dots[1]] = cfg.firstDotPandemicColor,
+        [dots[2]] = cfg.secondDotPandemicColor,
+    }
+
+    -- a dot is in pandemic when less than this fraction of its duration is left
+    modTable.pandemicThreshold = 0.3
+
+    -- what to color
+    modTable.colorHealthBar = cfg.namePlateOption
+    modTable.colorBorder = cfg.borderOption
+    modTable.colorName = cfg.nameOption
+end
